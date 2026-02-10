@@ -613,3 +613,11 @@ ul {
 .game-container {
   color: var(--text-primary);
 }
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  word-break: break-word;
+}
+
