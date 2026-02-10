@@ -618,17 +618,4 @@ ul {
     padding: 0 1rem;
   }
 
-  .contact-content {
-    flex-direction: column;
-  }
-}
-
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  word-break: break-word;
-}
-
 
