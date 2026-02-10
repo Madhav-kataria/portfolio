@@ -602,21 +602,14 @@ ul {
   }
 }
 
-/* FIX 2: FORCE DARK TEXT COLOR FOR WHITE SECTIONS
-   This fixes the "invisible" text in Resume, Contact, and Game sections */
-.section-resume,
-.section-contact,
-.section-projects,
-.game-instructions {
-  color: var(--text-primary) !important;
+/* Force readable text color on light sections */
+.section:not(.section-home) {
+  color: var(--text-primary);
 }
 
-/* Ensure contact info (email/linkedin) is visible */
-.contact-item {
-  color: var(--text-primary) !important;
-}
-
-.contact-item span,
-.resume-section p {
-  color: var(--text-secondary);
+/* Fix specific elements */
+.resume-content,
+.contact-content,
+.game-container {
+  color: var(--text-primary);
 }
