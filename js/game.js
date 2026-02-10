@@ -457,7 +457,6 @@ class PathfinderGame {
     this.gameWon = false;
     this.render();
     this.generateBoard();
-    this.setupEventListeners();
   }
 }
 
