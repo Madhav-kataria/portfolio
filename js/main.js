@@ -10,7 +10,6 @@ class PortfolioApp {
   
   init() {
     this.setupNavigation();
-    this.setupScrollIndicator(); // New specific setup for the scroll mouse
     this.setupProjects();
     this.setupContactForm();
     this.setupBackToTop();
@@ -45,18 +44,6 @@ class PortfolioApp {
     }, { passive: true });
   }
 
-  setupScrollIndicator() {
-    const indicator = document.querySelector('.scroll-indicator');
-    if (indicator) {
-      indicator.style.cursor = 'pointer'; // Visual cue that it's clickable
-      indicator.addEventListener('click', () => {
-        // Default to 'about' or read from data attribute if you added one
-        const target = indicator.getAttribute('data-section') || 'about';
-        this.navigateToSection(target);
-      });
-    }
-  }
-  
   navigateToSection(sectionId) {
     const targetSection = document.getElementById(sectionId);
     if (!targetSection) return;
