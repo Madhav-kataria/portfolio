@@ -82,12 +82,14 @@ ul {
 
 .section {
   padding: var(--section-padding);
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
+  scroll-margin-top: 90px;
   display: none;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s, transform 0.5s;
 }
+
 
 .section.active {
   display: block;
