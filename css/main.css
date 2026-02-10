@@ -14,11 +14,12 @@
   --bg-secondary: #f1f5f9;
   --bg-dark: #0f172a;
   --border-color: #e2e8f0;
+  --success: #10b981;
+  --error: #ef4444;
   
   /* Spacing */
-  --section-padding: 6rem 0; /* Increased padding for better separation */
+  --section-padding: 5rem 0;
   --container-width: 1200px;
-  --nav-height: 80px;
   
   /* Typography */
   --font-primary: 'Inter', sans-serif;
@@ -42,9 +43,8 @@
 }
 
 html {
-  scroll-behavior: smooth; /* Enables smooth scrolling natively */
+  scroll-behavior: smooth;
   font-size: 16px;
-  scroll-padding-top: var(--nav-height); /* Ensures anchor links don't hide under nav */
 }
 
 body {
@@ -80,13 +80,19 @@ ul {
   padding: 0 2rem;
 }
 
-/* FIX: Changed from display:none to block for natural scrolling */
 .section {
   padding: var(--section-padding);
-  min-height: 100vh; /* Ensures full screen height */
-  display: block;    /* Always visible */
-  position: relative;
-  overflow: hidden; /* Prevents horizontal scroll from animations */
+  min-height: 100vh;
+  display: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.section.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .section-title {
@@ -116,26 +122,23 @@ ul {
   top: 0;
   left: 0;
   right: 0;
-  height: var(--nav-height);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   z-index: 1000;
   transition: all var(--transition-base);
-  display: flex;
-  align-items: center;
 }
 
 .navbar.scrolled {
+  padding: 0.5rem 0;
   box-shadow: var(--shadow-lg);
-  background: rgba(255, 255, 255, 0.98);
 }
 
 .nav-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  padding: 1rem 2rem;
 }
 
 .nav-brand {
@@ -169,11 +172,10 @@ ul {
 }
 
 .nav-toggle {
-  display: none; /* Hidden on desktop */
+  display: none;
   flex-direction: column;
   gap: 5px;
   cursor: pointer;
-  z-index: 1001;
 }
 
 .nav-toggle span {
@@ -182,17 +184,6 @@ ul {
   background: var(--secondary-color);
   border-radius: 3px;
   transition: var(--transition-base);
-}
-
-/* Hamburger Animation */
-.nav-toggle.active span:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 6px);
-}
-.nav-toggle.active span:nth-child(2) {
-  opacity: 0;
-}
-.nav-toggle.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(5px, -6px);
 }
 
 .nav-menu {
@@ -259,14 +250,13 @@ ul {
 
 .btn-secondary {
   background: transparent;
-  color: #fff; /* White text for hero buttons usually */
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--primary-color);
   color: white;
-  border-color: white;
   transform: translateY(-2px);
 }
 
@@ -279,23 +269,21 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: var(--nav-height); /* Compensate for fixed nav */
+  padding: 0;
 }
 
 .hero-container {
   width: 100%;
   max-width: var(--container-width);
   padding: 2rem;
-  position: relative;
 }
 
 .hero-content {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr; /* More space for text */
+  grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
   margin-bottom: 4rem;
-  min-height: 70vh; /* Ensure hero feels tall */
 }
 
 .hero-greeting {
@@ -332,14 +320,13 @@ ul {
   color: #cbd5e1;
   line-height: 1.8;
   margin-bottom: 2rem;
-  max-width: 600px;
   animation: fadeInUp 0.6s ease-out 0.6s both;
 }
 
 .hero-stats {
   display: flex;
   gap: 3rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   animation: fadeInUp 0.6s ease-out 0.8s both;
 }
 
@@ -369,14 +356,13 @@ ul {
 .hero-image {
   position: relative;
   animation: fadeInRight 0.8s ease-out 0.4s both;
-  display: flex;
-  justify-content: center;
 }
 
 .image-wrapper {
   position: relative;
   width: 100%;
   max-width: 400px;
+  margin: 0 auto;
 }
 
 .profile-img {
@@ -400,6 +386,11 @@ ul {
   z-index: 1;
 }
 
+.scroll-indicator {
+  text-align: center;
+  color: #94a3b8;
+  animation: fadeIn 1s ease-out 1.5s both;
+}
 
 .scroll-mouse {
   width: 30px;
@@ -525,68 +516,39 @@ ul {
    Responsive Design
    =========================== */
 @media (max-width: 968px) {
-  /* Layout adjustments */
-  .section {
-    padding: 4rem 0; /* Smaller padding for mobile */
-    min-height: auto; /* Allow content to dictate height */
-  }
-
   .hero-content {
     grid-template-columns: 1fr;
     gap: 2rem;
-    text-align: center;
-    padding-top: 1rem;
-  }
-  
-  .hero-text {
-    order: 2; /* Image on top? If not, remove order */
-  }
-
-  .hero-image {
-    order: 1;
-    margin-bottom: 1rem;
   }
   
   .hero-name {
     font-size: 2.5rem;
   }
   
-  .hero-description {
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
   .hero-stats {
-    justify-content: center;
     gap: 2rem;
-  }
-  
-  .hero-cta {
-    justify-content: center;
   }
   
   .stat-number {
     font-size: 2rem;
   }
   
-  /* Mobile Navigation */
   .nav-toggle {
     display: flex;
   }
   
   .nav-menu {
     position: fixed;
-    top: var(--nav-height);
+    top: 70px;
     right: -100%;
     width: 280px;
-    height: calc(100vh - var(--nav-height));
+    height: calc(100vh - 70px);
     background: white;
     flex-direction: column;
     align-items: flex-start;
     padding: 2rem;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-xl);
     transition: right var(--transition-smooth);
-    overflow-y: auto; /* Enable scroll inside menu if tall */
   }
   
   .nav-menu.active {
@@ -596,13 +558,6 @@ ul {
   .nav-item {
     width: 100%;
     padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .nav-link {
-    display: block;
-    width: 100%;
-    font-size: 1.1rem;
   }
   
   .section-title {
@@ -625,12 +580,11 @@ ul {
   
   .hero-stats {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
   }
   
   .hero-cta {
     flex-direction: column;
-    width: 100%;
   }
   
   .btn {
