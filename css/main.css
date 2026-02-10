@@ -132,11 +132,6 @@ ul {
   transition: all var(--transition-base);
 }
 
-.navbar.scrolled {
-  padding: 0.5rem 0;
-  box-shadow: var(--shadow-lg);
-}
-
 .nav-container {
   display: flex;
   justify-content: space-between;
