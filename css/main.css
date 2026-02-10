@@ -45,6 +45,8 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  /* FIX: Ensures anchor links stop below the header */
+  scroll-padding-top: 80px; 
 }
 
 body {
@@ -80,15 +82,17 @@ ul {
   padding: 0 2rem;
 }
 
+/* FIX: Changed display:none to block to enable scrolling */
 .section {
   padding: var(--section-padding);
   min-height: 100vh;
-  display: none;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
+  display: block;   /* Changed from none */
+  opacity: 1;       /* Changed from 0 */
+  transform: none;  /* Removed transform */
 }
 
+/* This class is no longer strictly needed for visibility, 
+   but kept to prevent breaking JS logic */
 .section.active {
   display: block;
   opacity: 1;
@@ -269,7 +273,8 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  /* FIX: Added padding-top to prevent Nav from covering text */
+  padding-top: 80px; 
 }
 
 .hero-container {
