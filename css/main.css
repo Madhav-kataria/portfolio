@@ -613,6 +613,16 @@ ul {
 .game-container {
   color: var(--text-primary);
 }
+@media (max-width: 640px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .contact-content {
+    flex-direction: column;
+  }
+}
+
 .contact-item {
   display: flex;
   align-items: center;
@@ -620,4 +630,5 @@ ul {
   flex-wrap: wrap;
   word-break: break-word;
 }
+
 
