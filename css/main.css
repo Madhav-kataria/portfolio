@@ -649,5 +649,19 @@ ul {
 .navbar.scrolled {
   box-shadow: var(--shadow-lg);
 }
+@media (max-width: 768px) {
+  .navbar {
+    height: 95px;
+  }
+
+  .nav-container {
+    height: 95px;
+    padding: 0 1rem;
+  }
+
+  html {
+    scroll-padding-top: 95px;
+  }
+}
 
 
