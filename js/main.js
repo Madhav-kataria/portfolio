@@ -4,13 +4,13 @@
 
 class PortfolioApp {
   constructor() {
-    this.currentSection = 'home';
-    this.currentFilter = 'all';
+    this.navHeight = 80; // Approximate height of your fixed navbar
     this.init();
   }
   
   init() {
     this.setupNavigation();
+    this.setupScrollIndicator(); // New specific setup for the scroll mouse
     this.setupProjects();
     this.setupContactForm();
     this.setupBackToTop();
@@ -21,85 +21,109 @@ class PortfolioApp {
   }
   
   // ===========================
-  // Navigation
+  // Navigation & Scrolling
   // ===========================
   
   setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link, [data-section]');
+    const navLinks = document.querySelectorAll('.nav-link, [data-section], .hero-cta a');
     
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const section = link.getAttribute('href')?.slice(1) || link.dataset.section;
-        if (section) {
-          this.navigateToSection(section);
+        const href = link.getAttribute('href');
+        // Only intercept internal hash links (e.g., #about)
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const sectionId = href.substring(1);
+          this.navigateToSection(sectionId);
         }
       });
     });
     
-    // Handle browser back/forward
-    window.addEventListener('popstate', (e) => {
-      const section = e.state?.section || 'home';
-      this.showSection(section, false);
-    });
-    
-    // Navbar scroll effect
+    // Handle scroll events for Navbar styling and Active Link highlighting
     window.addEventListener('scroll', () => {
-      const navbar = document.getElementById('navbar');
-      if (window.scrollY > 100) {
-        navbar.classList.add('scrolled');
-      } else {
-        navbar.classList.remove('scrolled');
-      }
+      this.handleScroll();
     }, { passive: true });
   }
-  
-  navigateToSection(section) {
-    this.showSection(section, true);
-    
-    // Update URL
-    history.pushState({ section }, '', `#${section}`);
-    
-    // Close mobile menu if open
-    const navMenu = document.getElementById('nav-menu');
-    navMenu.classList.remove('active');
+
+  setupScrollIndicator() {
+    const indicator = document.querySelector('.scroll-indicator');
+    if (indicator) {
+      indicator.style.cursor = 'pointer'; // Visual cue that it's clickable
+      indicator.addEventListener('click', () => {
+        // Default to 'about' or read from data attribute if you added one
+        const target = indicator.getAttribute('data-section') || 'about';
+        this.navigateToSection(target);
+      });
+    }
   }
   
-  showSection(section, animate = true) {
-    // Hide all sections
-    document.querySelectorAll('.section').forEach(sec => {
-      sec.classList.remove('active');
+  navigateToSection(sectionId) {
+    const targetSection = document.getElementById(sectionId);
+    if (!targetSection) return;
+
+    // Calculate position - offset by navbar height so title isn't hidden
+    const elementPosition = targetSection.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - this.navHeight;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
     });
     
-    // Show target section
-    const targetSection = document.getElementById(section);
-    if (targetSection) {
-      if (animate) {
-        setTimeout(() => {
-          targetSection.classList.add('active');
-          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      } else {
-        targetSection.classList.add('active');
-      }
-    }
+    // Update URL Hash without jumping
+    history.pushState(null, null, `#${sectionId}`);
     
-    // Update active nav link
-    document.querySelectorAll('.nav-link').forEach(link => {
+    // Close mobile menu if it's open
+    const navMenu = document.getElementById('nav-menu');
+    const navToggle = document.getElementById('nav-toggle');
+    if (navMenu.classList.contains('active')) {
+      navMenu.classList.remove('active');
+      navToggle.classList.remove('active'); // Optional: if you animate the hamburger icon
+    }
+  }
+
+  handleScroll() {
+    const navbar = document.getElementById('navbar');
+    const scrollPosition = window.scrollY;
+
+    // 1. Navbar styling (glassmorphism effect)
+    if (scrollPosition > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+
+    // 2. Highlight active nav link based on scroll position
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    let currentSection = '';
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.clientHeight;
+      
+      // Check if we are currently viewing this section
+      // We add a small buffer (navHeight * 1.5) to trigger the highlight slightly early
+      if (scrollPosition >= (sectionTop - this.navHeight * 1.5)) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
       link.classList.remove('active');
-      const linkSection = link.getAttribute('href')?.slice(1);
-      if (linkSection === section) {
+      if (link.getAttribute('href') === `#${currentSection}`) {
         link.classList.add('active');
       }
     });
-    
-    this.currentSection = section;
   }
   
   handleInitialHash() {
-    const hash = window.location.hash.slice(1);
-    if (hash && document.getElementById(hash)) {
-      setTimeout(() => this.navigateToSection(hash), 300);
+    // If the user loads the page with #projects, scroll there immediately
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      // Small timeout to ensure DOM is fully ready
+      setTimeout(() => this.navigateToSection(hash), 100);
     }
   }
   
@@ -111,14 +135,21 @@ class PortfolioApp {
     const navToggle = document.getElementById('nav-toggle');
     const navMenu = document.getElementById('nav-menu');
     
-    navToggle.addEventListener('click', () => {
+    if (!navToggle || !navMenu) return;
+
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent immediate closing
       navMenu.classList.toggle('active');
+      navToggle.classList.toggle('active');
     });
     
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+      if (navMenu.classList.contains('active') && 
+          !navToggle.contains(e.target) && 
+          !navMenu.contains(e.target)) {
         navMenu.classList.remove('active');
+        navToggle.classList.remove('active');
       }
     });
   }
@@ -128,6 +159,9 @@ class PortfolioApp {
   // ===========================
   
   setupProjects() {
+    // Check if ProjectsData exists (loaded from projects-data.js)
+    if (typeof window.ProjectsData === 'undefined') return;
+
     this.renderProjects('all');
     this.setupProjectFilters();
   }
@@ -137,7 +171,7 @@ class PortfolioApp {
     
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        // Update active button
+        // Update active button state
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
@@ -158,25 +192,27 @@ class PortfolioApp {
     
     grid.innerHTML = '';
     
+    if (projects.length === 0) {
+      grid.innerHTML = '<p class="no-projects">No projects found in this category.</p>';
+      return;
+    }
+
     projects.forEach((project, index) => {
-      const card = this.createProjectCard(project, index);
+      const card = this.createProjectCard(project);
       grid.appendChild(card);
+      
+      // Staggered animation for project cards
+      setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, index * 100);
     });
-    
-    // Trigger scroll reveal
-    setTimeout(() => {
-      document.querySelectorAll('.project-card').forEach((card, i) => {
-        setTimeout(() => {
-          card.style.opacity = '1';
-          card.style.transform = 'translateY(0)';
-        }, i * 100);
-      });
-    }, 50);
   }
   
-  createProjectCard(project, index) {
+  createProjectCard(project) {
     const card = document.createElement('div');
     card.className = 'project-card';
+    // Initial state for animation
     card.style.opacity = '0';
     card.style.transform = 'translateY(20px)';
     card.style.transition = 'all 0.5s ease';
@@ -208,7 +244,7 @@ class PortfolioApp {
     }
     
     card.innerHTML = `
-      ${project.image ? `<img src="${project.image}" alt="${project.title}" class="project-image" loading="lazy">` : '<div class="project-image"></div>'}
+      ${project.image ? `<img src="${project.image}" alt="${project.title}" class="project-image" loading="lazy">` : '<div class="project-image-placeholder"></div>'}
       <div class="project-content">
         <div class="project-tags">${tagsHTML}</div>
         <h3 class="project-title">${project.title}</h3>
@@ -251,6 +287,7 @@ class PortfolioApp {
         if (response.ok) {
           statusEl.textContent = '✅ Message sent successfully! I\'ll get back to you soon.';
           statusEl.className = 'success';
+          statusEl.style.display = 'block';
           form.reset();
         } else {
           throw new Error('Form submission failed');
@@ -258,6 +295,7 @@ class PortfolioApp {
       } catch (error) {
         statusEl.textContent = '❌ Something went wrong. Please try emailing me directly.';
         statusEl.className = 'error';
+        statusEl.style.display = 'block';
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Send Message';
@@ -271,6 +309,7 @@ class PortfolioApp {
   
   setupBackToTop() {
     const backToTop = document.getElementById('back-to-top');
+    if (!backToTop) return;
     
     window.addEventListener('scroll', () => {
       if (window.scrollY > 300) {
@@ -295,25 +334,31 @@ class PortfolioApp {
   setupPrivacyModal() {
     const modal = document.getElementById('privacy-modal');
     const privacyLink = document.getElementById('privacy-link');
-    const closeBtn = modal.querySelector('.modal-close');
+    const closeBtn = modal ? modal.querySelector('.modal-close') : null;
     const dateEl = document.getElementById('privacy-date');
     
+    if (!modal || !privacyLink) return;
+
     // Set current date
-    const today = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    dateEl.textContent = today;
+    if (dateEl) {
+      const today = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      dateEl.textContent = today;
+    }
     
     privacyLink.addEventListener('click', (e) => {
       e.preventDefault();
       modal.classList.add('active');
     });
     
-    closeBtn.addEventListener('click', () => {
-      modal.classList.remove('active');
-    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+    }
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -323,19 +368,21 @@ class PortfolioApp {
   }
   
   // ===========================
-  // Scroll Animations
+  // Scroll Animations (Fade In)
   // ===========================
   
   setupScrollAnimations() {
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
+      rootMargin: '0px 0px -50px 0px'
     };
     
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('revealed');
+          // Optional: Stop observing once revealed
+          // observer.unobserve(entry.target);
         }
       });
     }, observerOptions);
@@ -356,33 +403,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===========================
-// Security Features
+// Security / Utilities
 // ===========================
 
-// Disable right-click
-document.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-});
+// Disable right-click (Optional - can be annoying for users)
+// document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-// Disable inspect shortcuts
-document.addEventListener('keydown', (e) => {
-  // F12
-  if (e.keyCode === 123) {
-    e.preventDefault();
-  }
-  // Ctrl+Shift+I / Ctrl+Shift+C / Ctrl+Shift+J
-  if (e.ctrlKey && e.shiftKey && [73, 67, 74].includes(e.keyCode)) {
-    e.preventDefault();
-  }
-  // Ctrl+U
-  if (e.ctrlKey && e.keyCode === 85) {
-    e.preventDefault();
-  }
-  // Ctrl+S
-  if (e.ctrlKey && e.keyCode === 83) {
-    e.preventDefault();
-  }
-});
-
-// IP Logger (optional)
-fetch("https://ip-logger.madhavkataria000.workers.dev/").catch(console.error);
+// IP Logger (If you really need this)
+if(typeof fetch !== 'undefined') {
+  fetch("https://ip-logger.madhavkataria000.workers.dev/").catch(console.error);
+}
