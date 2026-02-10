@@ -625,7 +625,7 @@ ul {
   flex-wrap: wrap;
   word-break: break-word;
 }
-/* Fix specific elements */
+/* photo on mobile as well as top header*/
 @media (max-width: 968px) {
   .hero-content {
     grid-template-columns: 1fr;
@@ -635,6 +635,19 @@ ul {
     order: -1;
     margin-bottom: 1.5rem;
   }
+}
+
+.navbar {
+  height: 80px;
+}
+
+.nav-container {
+  height: 80px;
+  padding: 0 2rem;
+}
+
+.navbar.scrolled {
+  box-shadow: var(--shadow-lg);
 }
 
 
